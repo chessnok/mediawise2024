@@ -14,7 +14,7 @@ if 'chats' not in st.session_state:
     st.session_state.chats = {"Main Chat": [{"sender": "assistant", "message": "How can I help you?"}]}
 
 if 'selected_chat' not in st.session_state:
-    st.session_state.selected_chat = "Main Chat"
+    st.session_state.selected_chat = ""
 
 
 # Функция для обработки чата
@@ -23,18 +23,17 @@ def chatbot_response(user_message):
     return f"Ответ бота на сообщение: {user_message}"
 
 
-def create_chat(name):
+def create_chat(chat_name):
+    chat_id = str(uuid.uuid4())  # Преобразуем UUID в строку
     conn = get_db_connection()
-    chat_id = uuid.uuid4()
     with conn:
         with conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO chats (id, name) VALUES (%s, %s) ON CONFLICT DO NOTHING",
-                (chat_id, name)
+                "INSERT INTO chats (id, name) VALUES (%s, %s)",
+                (chat_id, chat_name)
             )
     conn.close()
-    return chat_id  # Возвращаем chat_id для использования при добавлении сообщений
-
+    return chat_id
 
 # Функция для получения списка чатов
 def get_chats():
@@ -154,9 +153,11 @@ with tab1:
     with st.sidebar:
         st.title("Ваши чаты")
 
+        # Поле для ввода имени нового чата
+        new_chat_name = st.text_input("Введите название нового чата", key="new_chat_name")
+
         # Кнопка добавления нового чата
-        if st.button("Добавить чат"):
-            new_chat_name = st.text_input("Введите название нового чата", key="new_chat_name")
+        if st.button("Создать чат"):
             if new_chat_name:
                 chat_id = create_chat(new_chat_name)  # Создаем чат и получаем его chat_id
                 st.session_state.chats[chat_id] = new_chat_name
@@ -187,16 +188,19 @@ with tab1:
 
     # Обработка ответа от пользователя
     if prompt:
-        # Добавление сообщения от пользователя
-        add_chat_message(selected_chat_id, "user", prompt)
-        with chat_container:
-            st.chat_message("user").write(prompt)
+        if not selected_chat_id:
+            st.error("Выберите чат!")
+        else:
+            # Добавление сообщения от пользователя
+            add_chat_message(selected_chat_id, "user", prompt)
+            with chat_container:
+                st.chat_message("user").write(prompt)
 
-        # Получение и отображение ответа чатбота
-        response = chatbot_response(prompt)
-        add_chat_message(selected_chat_id, "assistant", response)
-        with chat_container:
-            st.chat_message("assistant").write(response)
+            # Получение и отображение ответа чатбота
+            response = chatbot_response(prompt)
+            add_chat_message(selected_chat_id, "assistant", response)
+            with chat_container:
+                st.chat_message("assistant").write(response)
 
 # Вкладка библиотеки
 with tab2:
