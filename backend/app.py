@@ -8,10 +8,12 @@ from config import get_db_connection
 if 'user_input' not in st.session_state:
     st.session_state.user_input = ""
 
+
 # Функция для обработки чата
 def chatbot_response(user_message):
     # Простая имитация ответа чата
     return f"Ответ бота на сообщение: {user_message}"
+
 
 # Функция для добавления сообщения в историю чата
 def add_chat_message(sender, message):
@@ -24,6 +26,7 @@ def add_chat_message(sender, message):
             )
     conn.close()
 
+
 # Функция для получения истории чата
 def get_chat_history():
     conn = get_db_connection()
@@ -33,6 +36,7 @@ def get_chat_history():
             chat_history = cur.fetchall()
     conn.close()
     return chat_history
+
 
 # Функция для добавления файла в базу данных
 def add_file_to_db(file, group_name):
@@ -62,6 +66,7 @@ def add_file_to_db(file, group_name):
             )
     conn.close()
 
+
 # Функция для создания новой группы файлов
 def create_file_group(group_name):
     conn = get_db_connection()
@@ -69,6 +74,7 @@ def create_file_group(group_name):
         with conn.cursor() as cur:
             cur.execute("INSERT INTO file_groups (group_name) VALUES (%s) ON CONFLICT DO NOTHING", (group_name,))
     conn.close()
+
 
 # Функция для получения групп файлов
 def get_file_groups():
@@ -79,6 +85,7 @@ def get_file_groups():
             groups = [row['group_name'] for row in cur.fetchall()]
     conn.close()
     return groups
+
 
 # Функция для получения файлов по группе
 def get_files_by_group(group_name):
@@ -105,21 +112,22 @@ tab1, tab2 = st.tabs(["Чат", "Библиотека"])
 
 # Вкладка чата
 with tab1:
-    st.header("Чат с ботом")
-    user_input = st.text_input("Введите ваше сообщение:", key="user_input")
+    st.title("💬 Chatbot")
+    st.caption("🚀 A Streamlit chatbot powered by OpenAI")
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
-    if st.button("Отправить"):
-        if user_input:
-            # Добавление сообщения в базу данных
-            add_chat_message("Вы", user_input)
-            response = chatbot_response(user_input)
-            add_chat_message("Бот", response)
-            st.session_state.user_input = ""  # Очистка ввода после отправки
+    for msg in st.session_state.messages:
+        st.chat_message(msg["role"]).write(msg["content"])
 
-    # Отображение истории чата
-    chat_history = get_chat_history()
-    for message in chat_history:
-        st.write(f"{message['sender']}: {message['message']}")
+    if prompt := st.chat_input():
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.chat_message("user").write(prompt)
+        #response = main(st.session_state.messages)
+        response = chatbot_response(st.session_state.messages)
+        msg = chatbot_response(response)
+        st.session_state.messages.append({"role": "assistant", "content": msg})
+        st.chat_message("assistant").write(msg)
 
 # Вкладка библиотеки
 with tab2:
