@@ -1,5 +1,3 @@
-import os
-import psycopg2
 import streamlit as st
 import time
 from datetime import datetime
@@ -10,10 +8,12 @@ from config import get_db_connection
 if 'user_input' not in st.session_state:
     st.session_state.user_input = ""
 
+
 # Функция для обработки чата
 def chatbot_response(user_message):
     # Простая имитация ответа чата
     return f"Ответ бота на сообщение: {user_message}"
+
 
 # Функция для добавления сообщения в историю чата
 def add_chat_message(sender, message):
@@ -26,6 +26,7 @@ def add_chat_message(sender, message):
             )
     conn.close()
 
+
 # Функция для получения истории чата
 def get_chat_history():
     conn = get_db_connection()
@@ -35,6 +36,7 @@ def get_chat_history():
             chat_history = cur.fetchall()
     conn.close()
     return chat_history
+
 
 # Функция для добавления файла в базу данных
 def add_file_to_db(file, group_name):
@@ -64,6 +66,7 @@ def add_file_to_db(file, group_name):
             )
     conn.close()
 
+
 # Функция для создания новой группы файлов
 def create_file_group(group_name):
     conn = get_db_connection()
@@ -71,6 +74,7 @@ def create_file_group(group_name):
         with conn.cursor() as cur:
             cur.execute("INSERT INTO file_groups (group_name) VALUES (%s) ON CONFLICT DO NOTHING", (group_name,))
     conn.close()
+
 
 # Функция для получения групп файлов
 def get_file_groups():
@@ -81,6 +85,7 @@ def get_file_groups():
             groups = [row['group_name'] for row in cur.fetchall()]
     conn.close()
     return groups
+
 
 # Функция для получения файлов по группе
 def get_files_by_group(group_name):
