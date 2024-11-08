@@ -100,6 +100,7 @@ def get_files_by_group(group_name):
     conn.close()
     return files
 
+
 # Основной интерфейс приложения
 st.title("Приложение с чатом и библиотекой файлов")
 
@@ -110,20 +111,34 @@ with tab1:
     st.title("💬 Chatbot")
     st.caption("🚀 A Streamlit chatbot powered by OpenAI")
 
-    # Получение истории чата из базы данных и отображение сообщений
-    chat_history = get_chat_history()
-    for msg in chat_history:
-        st.chat_message(msg["sender"]).write(msg["message"])
+    # Инициализация сообщений
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = [{"sender": "assistant", "content": "How can I help you?"}]
 
-    # Ввод сообщения пользователя
-    if prompt := st.chat_input():
-        st.chat_message("user").write(prompt)
-        add_chat_message("user", prompt)  # Сохранение сообщения пользователя в БД
+    # Создание контейнера для чата
+    chat_container = st.container()
 
-        # Генерация ответа бота
-        response = chatbot_response(prompt)
-        st.chat_message("assistant").write(response)
-        add_chat_message("assistant", response)  # Сохранение ответа бота в БД
+    # Отображение сообщений в контейнере чата
+    with chat_container:
+        chat_history = get_chat_history()
+        for msg in chat_history:
+            st.chat_message(msg["sender"]).write(msg["content"])
+
+    # Позиционирование строки ввода под контейнером сообщений
+    prompt = st.chat_input("Your message...")
+
+    # Обработка ответа от пользователя
+    if prompt:
+        # Добавление сообщения от пользователя
+        add_chat_message("user", prompt)
+        with chat_container:
+            st.chat_message("user").write(prompt)
+
+        # Получение и отображение ответа чатбота
+        response = chatbot_response(st.session_state.messages)
+        add_chat_message("assistant", response)
+        with chat_container:
+            st.chat_message("assistant").write(response)
 
 # Вкладка библиотеки
 with tab2:
