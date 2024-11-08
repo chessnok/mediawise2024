@@ -118,7 +118,7 @@ with tab1:
 
     # Инициализация сообщений
     if "messages" not in st.session_state:
-        st.session_state["messages"] = [{"sender": "assistant", "content": "How can I help you?"}]
+        st.session_state["messages"] = [{"sender": "assistant", "message": "How can I help you?"}]
 
     # Создание контейнера для чата
     chat_container = st.container()
@@ -127,7 +127,7 @@ with tab1:
     with chat_container:
         chat_history = get_chat_history()
         for msg in chat_history:
-            st.chat_message(msg["sender"]).write(msg["content"])
+            st.chat_message(msg["sender"]).write(msg["message"])
 
     # Позиционирование строки ввода под контейнером сообщений
     prompt = st.chat_input("Your message...")
