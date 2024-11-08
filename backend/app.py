@@ -105,6 +105,7 @@ def get_files_by_group(group_name):
     conn.close()
     return files
 
+
 # Основной интерфейс приложения
 st.title("Приложение с чатом и библиотекой файлов")
 
@@ -114,20 +115,34 @@ tab1, tab2 = st.tabs(["Чат", "Библиотека"])
 with tab1:
     st.title("💬 Chatbot")
     st.caption("🚀 A Streamlit chatbot powered by OpenAI")
+
+    # Инициализация сообщений
     if "messages" not in st.session_state:
         st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
-    for msg in st.session_state.messages:
-        st.chat_message(msg["role"]).write(msg["content"])
+    # Создание контейнера для чата
+    chat_container = st.container()
 
-    if prompt := st.chat_input():
+    # Отображение сообщений в контейнере чата
+    with chat_container:
+        for msg in st.session_state.messages:
+            st.chat_message(msg["role"]).write(msg["content"])
+
+    # Позиционирование строки ввода под контейнером сообщений
+    prompt = st.chat_input("Your message...")
+
+    # Обработка ответа от пользователя
+    if prompt:
+        # Добавление сообщения от пользователя
         st.session_state.messages.append({"role": "user", "content": prompt})
-        st.chat_message("user").write(prompt)
-        #response = main(st.session_state.messages)
+        with chat_container:
+            st.chat_message("user").write(prompt)
+
+        # Получение и отображение ответа чатбота
         response = chatbot_response(st.session_state.messages)
-        msg = chatbot_response(response)
-        st.session_state.messages.append({"role": "assistant", "content": msg})
-        st.chat_message("assistant").write(msg)
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        with chat_container:
+            st.chat_message("assistant").write(response)
 
 # Вкладка библиотеки
 with tab2:
