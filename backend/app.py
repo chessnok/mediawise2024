@@ -1,12 +1,20 @@
 import uuid
-
 import streamlit as st
 import time
 from datetime import datetime
 from psycopg2.extras import RealDictCursor
 from config import get_db_connection
+from streamlit_cookies_controller import CookieController
 
 # Инициализация состояния приложения
+controller = CookieController()
+
+# Проверяем, есть ли user_id в cookie
+user_id = controller.get('Authorization')
+if not user_id:
+    user_id = str(uuid.uuid4())
+    controller.set('Authorization', user_id)
+
 if 'user_input' not in st.session_state:
     st.session_state.user_input = ""
 
@@ -24,13 +32,14 @@ def chatbot_response(user_message):
 
 
 def create_chat(chat_name):
+    user_id = str(controller.get('Authorization'))
     chat_id = str(uuid.uuid4())  # Преобразуем UUID в строку
     conn = get_db_connection()
     with conn:
         with conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO chats (id, name) VALUES (%s, %s)",
-                (chat_id, chat_name)
+                "INSERT INTO chats (id, name, user_id) VALUES (%s, %s, %s)",
+                (chat_id, chat_name, user_id)
             )
     conn.close()
     return chat_id
@@ -38,10 +47,13 @@ def create_chat(chat_name):
 
 # Функция для получения списка чатов
 def get_chats():
+    user_id = str(controller.get('Authorization'))
     conn = get_db_connection()
     with conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT id, name FROM chats ORDER BY timestamp DESC")
+            cur.execute("SELECT id, name FROM chats WHERE user_id = %s ORDER BY timestamp DESC",
+                        (user_id,))
+
             chats = cur.fetchall()
     conn.close()
     return chats
