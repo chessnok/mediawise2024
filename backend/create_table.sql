@@ -17,7 +17,8 @@ CREATE TABLE files (
 
 CREATE TABLE chats (
     id UUID PRIMARY KEY,
-    name VARCHAR(255)
+    name VARCHAR(255),
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Таблица для хранения истории чата

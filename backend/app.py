@@ -35,12 +35,13 @@ def create_chat(chat_name):
     conn.close()
     return chat_id
 
+
 # Функция для получения списка чатов
 def get_chats():
     conn = get_db_connection()
     with conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT id, name FROM chats")
+            cur.execute("SELECT id, name FROM chats ORDER BY timestamp DESC")
             chats = cur.fetchall()
     conn.close()
     return chats
