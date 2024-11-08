@@ -1,0 +1,105 @@
+.dino-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    background-color: #f0e4d7;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dino-art {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.dino-body {
+    background-color: #74b72e;
+    width: 150px;
+    height: 100px;
+    border-radius: 50%;
+    position: relative;
+}
+
+.dino-head {
+    background-color: #74b72e;
+    width: 70px;
+    height: 60px;
+    border-radius: 50%;
+    position: absolute;
+    top: -40px;
+    left: 30px;
+}
+
+.dino-eye {
+    background-color: #fff;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    position: absolute;
+    top: 15px;
+    left: 25px;
+}
+
+.dino-mouth {
+    width: 30px;
+    height: 5px;
+    background-color: #333;
+    position: absolute;
+    top: 35px;
+    left: 20px;
+    border-radius: 0 0 10px 10px;
+}
+
+.dino-arms .dino-arm {
+    width: 20px;
+    height: 10px;
+    background-color: #74b72e;
+    border-radius: 50%;
+    position: absolute;
+    top: 40px;
+}
+
+.dino-arms .dino-arm:first-child {
+    left: -20px;
+}
+
+.dino-arms .dino-arm:last-child {
+    right: -20px;
+}
+
+.dino-legs .dino-leg {
+    width: 15px;
+    height: 40px;
+    background-color: #74b72e;
+    position: absolute;
+    bottom: -20px;
+}
+
+.dino-legs .dino-leg:first-child {
+    left: 25px;
+}
+
+.dino-legs .dino-leg:last-child {
+    right: 25px;
+}
+
+.dino-tail {
+    width: 90px;
+    height: 10px;
+    background-color: #74b72e;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 20px;
+    left: -60px;
+    transform: rotate(30deg);
+}
+
+.dino-title {
+    font-size: 1.5em;
+    color: #333;
+    margin-top: 20px;
+}
