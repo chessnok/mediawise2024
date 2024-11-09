@@ -31,6 +31,8 @@ CREATE TABLE messages
 (
     id        SERIAL PRIMARY KEY,
     sender    VARCHAR(50),
+    is_pdf_page  BOOLEAN DEFAULT FALSE,
+    page_num INTEGER DEFAULT 0,
     message   TEXT,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     chat_id   UUID REFERENCES chats (id)
