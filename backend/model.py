@@ -13,40 +13,19 @@ class Retrieval(TypedDict):
 class Message(TypedDict):
     role: str  # Роль отправителя: assistant или user
     content: str
-    retrievals: List[Retrieval]  # Список контента, от RAG
+    attachments: List[str]  # Список контента, в формате uuid
 
 
 example_request: List[Message] = [
     {
         "role": "user",
         "content": "Привет, пришли любой график",
-        "retrievals": [
-            {
-                "type": "text",
-                "content": "важная часть текста про ожирение",
-                "source": "/files/lol.txt",
-                "relevance": 0.9
-            }
-        ]
-    },
-    {
-        "role": "assistant",
-        "content": "Эти графики описывают уровень ожирения в мире",
-        "retrievals": []
-    },
-    {
-        "role": "user",
-        "content": "Спасибо, а что по поводу статей на эту тему?",
-        "retrievals": [
-            {
-                "type": "image",
-                "content": "/files/image_part.jpeg",
-                "source": "/files/lol2.pdf",
-                "relevance": 0.95
-            }
+        "attachments": [
+            "4b3b3b3b-3b3b-3b3b-3b3b-3b3b3b3b3b3b",
         ]
     }
 ]
+
 
 def get_response(thread: List[Message]) -> str:
     if len(thread) == 1:
