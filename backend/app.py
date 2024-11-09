@@ -5,6 +5,9 @@ from datetime import datetime
 from psycopg2.extras import RealDictCursor
 from config import get_db_connection
 from streamlit_cookies_controller import CookieController
+import concurrent.futures
+
+import model
 
 # Инициализация состояния приложения
 controller = CookieController()
@@ -26,11 +29,6 @@ if 'selected_chat' not in st.session_state:
 
 
 # Функция для обработки чата
-def chatbot_response(user_message):
-    # Простая имитация ответа чата
-    return f"Ответ бота на сообщение: {user_message}"
-
-
 def create_chat(chat_name):
     user_id = str(controller.get('Authorization'))
     chat_id = str(uuid.uuid4())  # Преобразуем UUID в строку
@@ -182,7 +180,7 @@ with tab1:
         selected_chat_id = st.selectbox("Выберите чат", options=list(chat_options.keys()), format_func=lambda x: chat_options[x])
         st.session_state.selected_chat_id = selected_chat_id
 
-    st.caption("🚀 A chatbot powered by DeepTech")
+    st.caption("Чат бот команды DeepTech")
 
     # Загрузка истории сообщений для выбранного чата
     if selected_chat_id:
@@ -198,6 +196,9 @@ with tab1:
 
     # Позиционирование строки ввода под контейнером сообщений
     prompt = st.chat_input("Your message...")
+    # Функция для асинхронного получения ответа чат-бота
+    def get_response(thread: model.Thread) -> model.ModelResponse:
+        return model.get_response(prompt)
 
     # Обработка ответа от пользователя
     if prompt:
@@ -209,8 +210,12 @@ with tab1:
             with chat_container:
                 st.chat_message("user").write(prompt)
 
-            # Получение и отображение ответа чатбота
-            response = chatbot_response(prompt)
+            # Запуск обработки ответа в отдельном потоке
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(get_response, prompt)
+                response = future.result()  # Получаем результат из потока
+
+            # Добавление и отображение ответа чат-бота
             add_chat_message(selected_chat_id, "assistant", response)
             with chat_container:
                 st.chat_message("assistant").write(response)
@@ -242,9 +247,4 @@ with tab2:
             st.success(f"Группа '{new_group}' создана!")
 
     # Загрузка файла в группу
-    uploaded_file = st.file_uploader("Загрузить файл (txt или pdf):", type=["txt", "pdf"])
-    if uploaded_file and selected_group:
-        start_time = time.time()
-        add_file_to_db(uploaded_file, selected_group)
-        st.success(f"Файл '{uploaded_file.name}' загружен в группу '{selected_group}'")
-        st.write(f"Время загрузки: {time.time() - start_time:.2f} секунд")
+    uploaded_file = st.file_uploader
