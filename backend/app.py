@@ -162,7 +162,7 @@ def get_groups():
     conn = get_db_connection()
     with conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT group_name FROM file_groups ORDER BY timestamp")
+            cur.execute("SELECT group_name FROM file_groups ORDER BY timestamp DESC")
             groups = [row['group_name'] for row in cur.fetchall()]
     conn.close()
     return groups
@@ -257,7 +257,7 @@ with tab2:
                 f"Время загрузки: {file['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}")
             with st.expander("Посмотреть файл"):
                 if file['file_type'] == "txt":
-                    st.text(file['content'])
+                    st.text(file['content'].decode("utf-8"))
                 elif file['file_type'] == "pdf":
                     # Ссылка для просмотра PDF файла
                     file_url = f"/files/{file['file_name']}"
