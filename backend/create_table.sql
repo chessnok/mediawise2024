@@ -14,10 +14,19 @@ CREATE TABLE files (
     content BYTEA
 );
 
+
+CREATE TABLE chats (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255),
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    user_id UUID
+);
+
 -- Таблица для хранения истории чата
-CREATE TABLE chat_history (
+CREATE TABLE messages (
     id SERIAL PRIMARY KEY,
     sender VARCHAR(50),
     message TEXT,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    chat_id UUID REFERENCES chats(id)
 );

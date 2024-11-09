@@ -1,38 +1,89 @@
+import uuid
 import streamlit as st
 import time
 from datetime import datetime
 from psycopg2.extras import RealDictCursor
 from config import get_db_connection
+from streamlit_cookies_controller import CookieController
 
 # Инициализация состояния приложения
+controller = CookieController()
+
+# Проверяем, есть ли user_id в cookie
+user_id = controller.get('Authorization')
+if not user_id:
+    user_id = str(uuid.uuid4())
+    controller.set('Authorization', user_id)
+
 if 'user_input' not in st.session_state:
     st.session_state.user_input = ""
+
+if 'chats' not in st.session_state:
+    st.session_state.chats = {"Main Chat": [{"sender": "assistant", "message": "How can I help you?"}]}
+
+if 'selected_chat' not in st.session_state:
+    st.session_state.selected_chat = ""
+
 
 # Функция для обработки чата
 def chatbot_response(user_message):
     # Простая имитация ответа чата
     return f"Ответ бота на сообщение: {user_message}"
 
-# Функция для добавления сообщения в историю чата
-def add_chat_message(sender, message):
+
+def create_chat(chat_name):
+    user_id = str(controller.get('Authorization'))
+    chat_id = str(uuid.uuid4())  # Преобразуем UUID в строку
     conn = get_db_connection()
     with conn:
         with conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO chat_history (sender, message) VALUES (%s, %s)",
-                (sender, message)
+                "INSERT INTO chats (id, name, user_id) VALUES (%s, %s, %s)",
+                (chat_id, chat_name, user_id)
             )
     conn.close()
+    return chat_id
 
-# Функция для получения истории чата
-def get_chat_history():
+
+# Функция для получения списка чатов
+def get_chats():
+    user_id = str(controller.get('Authorization'))
     conn = get_db_connection()
     with conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT sender, message FROM chat_history ORDER BY id")
+            cur.execute("SELECT id, name FROM chats WHERE user_id = %s ORDER BY timestamp DESC",
+                        (user_id,))
+
+            chats = cur.fetchall()
+    conn.close()
+    return chats
+
+
+# Функция для добавления сообщения в историю чата
+def add_chat_message(chat_id, sender, message):
+    conn = get_db_connection()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO messages (sender, message, chat_id) VALUES (%s, %s, %s)",
+                (sender, message, chat_id)
+            )
+    conn.close()
+
+
+# Функция для получения истории чата по chat_id
+def get_chat_history(chat_id):
+    conn = get_db_connection()
+    with conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                "SELECT sender, message, timestamp FROM messages WHERE chat_id = %s ORDER BY timestamp",
+                (chat_id,)
+            )
             chat_history = cur.fetchall()
     conn.close()
     return chat_history
+
 
 # Функция для добавления файла в базу данных
 def add_file_to_db(file, group_name):
@@ -62,6 +113,7 @@ def add_file_to_db(file, group_name):
             )
     conn.close()
 
+
 # Функция для создания новой группы файлов
 def create_file_group(group_name):
     conn = get_db_connection()
@@ -69,6 +121,7 @@ def create_file_group(group_name):
         with conn.cursor() as cur:
             cur.execute("INSERT INTO file_groups (group_name) VALUES (%s) ON CONFLICT DO NOTHING", (group_name,))
     conn.close()
+
 
 # Функция для получения групп файлов
 def get_file_groups():
@@ -79,6 +132,7 @@ def get_file_groups():
             groups = [row['group_name'] for row in cur.fetchall()]
     conn.close()
     return groups
+
 
 # Функция для получения файлов по группе
 def get_files_by_group(group_name):
@@ -98,6 +152,7 @@ def get_files_by_group(group_name):
     conn.close()
     return files
 
+
 # Основной интерфейс приложения
 st.title("Приложение с чатом и библиотекой файлов")
 
@@ -105,21 +160,60 @@ tab1, tab2 = st.tabs(["Чат", "Библиотека"])
 
 # Вкладка чата
 with tab1:
-    st.header("Чат с ботом")
-    user_input = st.text_input("Введите ваше сообщение:", key="user_input")
+    st.title("💬 Chatbot")
 
-    if st.button("Отправить"):
-        if user_input:
-            # Добавление сообщения в базу данных
-            add_chat_message("Вы", user_input)
-            response = chatbot_response(user_input)
-            add_chat_message("Бот", response)
-            st.session_state.user_input = ""  # Очистка ввода после отправки
+    # Загрузка списка чатов из базы данных
+    with st.sidebar:
+        st.title("Ваши чаты")
 
-    # Отображение истории чата
-    chat_history = get_chat_history()
-    for message in chat_history:
-        st.write(f"{message['sender']}: {message['message']}")
+        # Поле для ввода имени нового чата
+        new_chat_name = st.text_input("Введите название нового чата", key="new_chat_name")
+
+        # Кнопка добавления нового чата
+        if st.button("Создать чат"):
+            if new_chat_name:
+                chat_id = create_chat(new_chat_name)  # Создаем чат и получаем его chat_id
+                st.session_state.chats[chat_id] = new_chat_name
+                st.session_state.selected_chat_id = chat_id
+
+        # Загрузка чатов и отображение в selectbox
+        chats = get_chats()
+        chat_options = {chat['id']: chat['name'] for chat in chats}
+        selected_chat_id = st.selectbox("Выберите чат", options=list(chat_options.keys()), format_func=lambda x: chat_options[x])
+        st.session_state.selected_chat_id = selected_chat_id
+
+    st.caption("🚀 A chatbot powered by DeepTech")
+
+    # Загрузка истории сообщений для выбранного чата
+    if selected_chat_id:
+        chat_messages = get_chat_history(selected_chat_id)
+    else:
+        chat_messages = []
+
+    # Создание контейнера для чата и отображение истории сообщений
+    chat_container = st.container()
+    with chat_container:
+        for msg in chat_messages:
+            st.chat_message(msg["sender"]).write(msg["message"])
+
+    # Позиционирование строки ввода под контейнером сообщений
+    prompt = st.chat_input("Your message...")
+
+    # Обработка ответа от пользователя
+    if prompt:
+        if not selected_chat_id:
+            st.error("Выберите чат!")
+        else:
+            # Добавление сообщения от пользователя
+            add_chat_message(selected_chat_id, "user", prompt)
+            with chat_container:
+                st.chat_message("user").write(prompt)
+
+            # Получение и отображение ответа чатбота
+            response = chatbot_response(prompt)
+            add_chat_message(selected_chat_id, "assistant", response)
+            with chat_container:
+                st.chat_message("assistant").write(response)
 
 # Вкладка библиотеки
 with tab2:
