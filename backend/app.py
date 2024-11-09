@@ -279,11 +279,14 @@ with tab2:
     # Загрузка файла
     if uploaded_file:
         if st.button("Загрузить файл") and selected_group:
-            start_time = time.time()
-            add_file_to_db(uploaded_file, selected_group)
-            st.success(f"Файл '{uploaded_file.name}' загружен в группу '{selected_group}'")
-            st.write(f"Время загрузки: {time.time() - start_time:.2f} секунд")
+            if uploaded_file.name in map(lambda x: x['file_name'], get_files_by_group(selected_group)):
+                st.error(f"Файл '{uploaded_file.name}' уже загружен в группу '{selected_group}'")
+            else:
+                start_time = time.time()
+                add_file_to_db(uploaded_file, selected_group)
+                st.success(f"Файл '{uploaded_file.name}' загружен в группу '{selected_group}'")
+                st.write(f"Время загрузки: {time.time() - start_time:.2f} секунд")
 
-            files_container.empty()
-            display_files()
+                files_container.empty()
+                display_files()
 
