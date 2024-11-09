@@ -247,28 +247,64 @@ with tab2:
     selected_group = st.selectbox("Выберите группу для просмотра:", get_groups())
     st.session_state.selected_group = selected_group
 
+    files_container = st.empty()
+
+
+    def display_files():
+        with files_container.container():
+            st.subheader(f"Файлы в группе: {selected_group}")
+            files = get_files_by_group(selected_group)
+            if files:
+                for file in files:
+                    with st.expander(file['file_name']):
+                        st.write(f"Имя файла: {file['file_name']}")
+                        st.write(f"Тип файла: {file['file_type']}")
+                        st.write(f"Время загрузки: {file['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}")
+
+                        if file['file_type'] == "txt":
+                            try:
+                                # Преобразуем memoryview в bytes, а затем декодируем в строку
+                                content = file['content'].tobytes().decode("utf-8")
+                                # Ограничиваем высоту контейнера с прокруткой
+                                st.markdown(
+                                    f"""
+                                    <div style="height:400px; overflow-y:scroll; border:1px solid #ccc; padding:10px; white-space:pre-wrap;">
+                                        {content}
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True
+                                )
+                            except UnicodeDecodeError:
+                                st.error("Не удалось декодировать содержимое файла.")
+
+                        elif file['file_type'] == "pdf":
+                            # Ссылка для просмотра PDF файла
+                            file_url = f"/files/{file['file_name']}"
+                            st.markdown(
+                                f'<embed src="{file_url}" width="100%" height="500px" type="application/pdf">',
+                                unsafe_allow_html=True
+                            )
+            else:
+                st.write("В этой группе пока нет файлов!")
+
+
     if selected_group:
-        st.subheader(f"Файлы в группе: {selected_group}")
-        files = get_files_by_group(selected_group)
-        for file in files:
-            st.write(f"Имя файла: {file['file_name']}")
-            st.write(f"Тип файла: {file['file_type']}")
-            st.write(
-                f"Время загрузки: {file['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}")
-            with st.expander("Посмотреть файл"):
-                if file['file_type'] == "txt":
-                    st.text(file['content'].decode("utf-8"))
-                elif file['file_type'] == "pdf":
-                    # Ссылка для просмотра PDF файла
-                    file_url = f"/files/{file['file_name']}"
-                    st.markdown(f'<embed src="{file_url}" width="100%" height="500px" type="application/pdf" >',
-                                unsafe_allow_html=True)
+        display_files()
 
     uploaded_file = st.file_uploader("Загрузить файл (txt или pdf):",
                                      type=["txt", "pdf"])
-    if uploaded_file and selected_group:
-        start_time = time.time()
-        add_file_to_db(uploaded_file, selected_group)
-        st.success(
-            f"Файл '{uploaded_file.name}' загружен в группу '{selected_group}'")
-        st.write(f"Время загрузки: {time.time() - start_time:.2f} секунд")
+
+    # Загрузка файла
+    if uploaded_file:
+        if st.button("Загрузить файл") and selected_group:
+            if uploaded_file.name in map(lambda x: x['file_name'], get_files_by_group(selected_group)):
+                st.error(f"Файл '{uploaded_file.name}' уже загружен в группу '{selected_group}'")
+            else:
+                start_time = time.time()
+                add_file_to_db(uploaded_file, selected_group)
+                st.success(f"Файл '{uploaded_file.name}' загружен в группу '{selected_group}'")
+                st.write(f"Время загрузки: {time.time() - start_time:.2f} секунд")
+
+                files_container.empty()
+                display_files()
+
