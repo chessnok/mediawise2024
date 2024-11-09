@@ -15,7 +15,7 @@ Flask, Telebot, ML libraries
 1. Run `docker-compose up -d`
 2. Run `docker-compose exec tg_bot python init.py`
 3. Run `docker-compose exec backend python init.py`
-4. Open [TgBot](https://t.me/EasyDocsDeepTech_bot) or [Website](localhost)
+4. Open [Website](localhost)
 5. Enjoy!
 
 
@@ -36,7 +36,7 @@ Flask, Telebot, ML libraries
 - HTML
 - CSS
 
-![Структура проекта](/assets/image2.jpg "Структура проекта")
+![Структура проекта](/assets/img2.png "Структура проекта")
 Структура проекта
 ![Пользовательские сценарии при обращении к боту](/assets/image1.jpg "Пользовательские сценарии")
 Пользовательские сценарии telegram бота
