@@ -1,7 +1,8 @@
 -- Таблица для хранения групп файлов
 CREATE TABLE file_groups (
     id SERIAL PRIMARY KEY,
-    group_name VARCHAR(255) UNIQUE NOT NULL
+    group_name VARCHAR(255) UNIQUE NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Таблица для хранения информации о файлах
