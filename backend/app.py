@@ -33,8 +33,10 @@ if not os.path.exists("/files"):
 
 
 # Функции для чата и работы с файлами
-def chatbot_response(user_message):
-    return f"Ответ бота на сообщение: {user_message}"
+def chatbot_response(user_message) -> (str, str):
+    message = f"Ответ бота на сообщение: {user_message}"
+    src = "cat.jpg"
+    return message, src
 
 
 def create_chat(chat_name):
@@ -75,12 +77,23 @@ def add_chat_message(chat_id, sender, message):
     conn.close()
 
 
+def add_image_message(chat_id, sender, image: str):
+    conn = get_db_connection()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO messages (sender, is_image, chat_id, message) VALUES (%s, %s, %s, %s)",
+                (sender, True, chat_id, image)
+            )
+    conn.close()
+
+
 def get_chat_history(chat_id):
     conn = get_db_connection()
     with conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(
-                "SELECT sender, message, timestamp FROM messages WHERE chat_id = %s ORDER BY timestamp",
+                "SELECT sender, message, timestamp, is_image FROM messages WHERE chat_id = %s ORDER BY timestamp",
                 (chat_id,)
             )
             chat_history = cur.fetchall()
@@ -214,7 +227,13 @@ with tab1:
     chat_container = st.container()
     with chat_container:
         for msg in chat_messages:
-            st.chat_message(msg["sender"]).write(msg["message"])
+            if not msg["is_image"]:
+                st.chat_message(msg["sender"]).write(msg["message"])
+            else:
+                try:
+                    st.chat_message(msg["sender"]).image(msg["message"])
+                except:
+                    st.chat_message(msg["sender"]).image("not_found.jpg", caption="Файл не найден")
 
     prompt = st.chat_input("Your message...")
 
@@ -226,10 +245,12 @@ with tab1:
             with chat_container:
                 st.chat_message("user").write(prompt)
 
-            response = chatbot_response(prompt)
+            response, src = chatbot_response(prompt)
             add_chat_message(selected_chat_id, "assistant", response)
+            add_image_message(selected_chat_id, "assistant", src)
             with chat_container:
                 st.chat_message("assistant").write(response)
+                st.chat_message("assistant").image(src)
 
 
 # Вкладка библиотеки
