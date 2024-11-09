@@ -249,6 +249,7 @@ with tab2:
 
     files_container = st.empty()
 
+
     def display_files():
         with files_container.container():
             st.subheader(f"Файлы в группе: {selected_group}")
@@ -258,17 +259,34 @@ with tab2:
                     with st.expander(file['file_name']):
                         st.write(f"Имя файла: {file['file_name']}")
                         st.write(f"Тип файла: {file['file_type']}")
-                        st.write(
-                            f"Время загрузки: {file['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}")
+                        st.write(f"Время загрузки: {file['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}")
+
                         if file['file_type'] == "txt":
-                            st.text(file['content'].decode("utf-8"))
+                            try:
+                                # Преобразуем memoryview в bytes, а затем декодируем в строку
+                                content = file['content'].tobytes().decode("utf-8")
+                                # Ограничиваем высоту контейнера с прокруткой
+                                st.markdown(
+                                    f"""
+                                    <div style="height:400px; overflow-y:scroll; border:1px solid #ccc; padding:10px; white-space:pre-wrap;">
+                                        {content}
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True
+                                )
+                            except UnicodeDecodeError:
+                                st.error("Не удалось декодировать содержимое файла.")
+
                         elif file['file_type'] == "pdf":
                             # Ссылка для просмотра PDF файла
                             file_url = f"/files/{file['file_name']}"
-                            st.markdown(f'<embed src="{file_url}" width="100%" height="500px" type="application/pdf" >',
-                                        unsafe_allow_html=True)
+                            st.markdown(
+                                f'<embed src="{file_url}" width="100%" height="500px" type="application/pdf">',
+                                unsafe_allow_html=True
+                            )
             else:
-                st.write("В этой группе пока нет файлов!")
+                st.write("В этой группе пока нет файлов!")
+
 
     if selected_group:
         display_files()
