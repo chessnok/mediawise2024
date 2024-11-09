@@ -163,6 +163,16 @@ def get_files_by_group(group_name):
     return files
 
 
+def get_groups():
+    conn = get_db_connection()
+    with conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT group_name FROM file_groups")
+            groups = [row['group_name'] for row in cur.fetchall()]
+    conn.close()
+    return groups
+
+
 # Основной интерфейс приложения
 st.title("Приложение с чатом и библиотекой файлов")
 
@@ -230,7 +240,7 @@ with tab2:
             create_file_group(new_group_name)
             st.success(f"Группа '{new_group_name}' создана!")
 
-    selected_group = st.selectbox("Выберите группу для просмотра:")
+    selected_group = st.selectbox("Выберите группу для просмотра:", get_groups())
     st.session_state.selected_group = selected_group
 
     if selected_group:
