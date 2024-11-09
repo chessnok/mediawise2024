@@ -1,0 +1,23 @@
+{
+  "id": "chat_new",
+  "messages": [
+    {
+      "role": "user",
+      "content": "21321321"
+    },
+    {
+      "role": "assistant",
+      "content": "Response to: 21321321",
+      "links": [
+        {
+          "text": "Example Link 1",
+          "url": "https://example.com/1"
+        },
+        {
+          "text": "Example Link 2",
+          "url": "https://example.com/2"
+        }
+      ]
+    }
+  ]
+}

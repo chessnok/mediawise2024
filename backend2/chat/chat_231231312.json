@@ -1,0 +1,59 @@
+{
+  "id": "chat_231231312",
+  "messages": [
+    {
+      "role": "user",
+      "content": "321321321"
+    },
+    {
+      "role": "assistant",
+      "content": "Response to: 321321321",
+      "links": [
+        {
+          "text": "Example Link 1",
+          "url": "https://example.com/1"
+        },
+        {
+          "text": "Example Link 2",
+          "url": "https://example.com/2"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "213231321"
+    },
+    {
+      "role": "assistant",
+      "content": "Response to: 213231321",
+      "links": [
+        {
+          "text": "Example Link 1",
+          "url": "https://example.com/1"
+        },
+        {
+          "text": "Example Link 2",
+          "url": "https://example.com/2"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "432142314321"
+    },
+    {
+      "role": "assistant",
+      "content": "Response to: 432142314321",
+      "links": [
+        {
+          "text": "Example Link 1",
+          "url": "https://example.com/1"
+        },
+        {
+          "text": "Example Link 2",
+          "url": "https://example.com/2"
+        }
+      ]
+    }
+  ]
+}
