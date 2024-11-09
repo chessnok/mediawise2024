@@ -4,13 +4,8 @@ from uuid import uuid4
 
 # Точный вид сообщений может поменяться, т.к. будут ещё картинки, но они обычно просто ссылками передаются
 class Message(TypedDict):
-    role: str
+    role: str  # Роль отправителя: assistant или user
     content: str
-
-
-class Thread(TypedDict):
-    id: str
-    messages: List[Message]
 
 
 class Retrieval(TypedDict):
@@ -18,50 +13,62 @@ class Retrieval(TypedDict):
     content: str  # Текст, либо ссылка на картинку в локальном хранилище
     source: str  # Ссылка на источник данных: txt или pdf
     relevance: float  # Чем больше, тем больше вероятность, что это релевантный контент
+    page: Optional[int]  # Номер страницы в pdf-файле, если это pdf
 
 
-class ModelResponse(TypedDict):
-    message: str  # Сообщение, которое нужно отправить пользователю
-    retrievals: List[Retrieval]
+class LLMRequest(TypedDict):
+    messages: List[Message]
+    retrievals: List[Retrieval]  # Список контента, от RAG
 
-
-def get_response(thread: Thread) -> ModelResponse:
-    if len(thread["messages"]) == 0:
-        return {
-            "message": "Привет! Чем могу помочь?",
-            "retrievals": []
+example_request: LLMRequest = {
+    "messages": [
+        {
+            "role": "user",
+            "content": "Привет, пришли любой график",
+        },
+        {
+            "role": "assistant",
+            "content": "Эти графики описывают уровень ожирения в мире",
+        },
+        {
+            "role": "user",
+            "content": "Спасибо, а что по поводу статей на эту тему?",
+        },
+    ],
+    "retrievals": [
+        {
+            "type": "text",
+            "content": "важная часть текста про ожирение",
+            "source": "/files/lol.txt",
+            "relevance": 0.9
+        },
+        {
+            "type": "image",
+            "content": "/files/image_part.jpeg",
+            "source": "/files/lol2.pdf",
+            "relevance": 0.95
+        },
+        {
+            "type": "image",
+            "content": "/files/image_part.jpeg",
+            "source": "/files/lol2.pdf",
+            "relevance": 0.5
         }
+    ]
+}
+
+def get_response(thread: LLMRequest) -> str:
     if len(thread["messages"]) == 1:
-        return {
-            "message": "Какой-то текст",
-            "retrievals": []
-        }
-    if len(thread["messages"]) == 2:
-        return {
-            "message": "Ну тут вот такой текст",
-            "retrievals": [
-                {
-                    "type": "text",
-                    "content": "Текст",
-                    "source": "txt",
-                    "relevance": 0.9
-                },
-            ]
-        }
-    return {
-        "message": "Идеи закончились",
-        "retrievals": [
-            {
-                "type": "text",
-                "content": "Текст",
-                "source": "txt",
-                "relevance": 0.9
-            },
-            {
-                "type": "image",
-                "content": "https://drive.google.com/uc?export=download&id=1SqlpHn6FKBwNHEIKziqqT9s00O1E8LJr",
-                "source": "pdf",
-                "relevance": 0.7
-            }
-        ]
-    }
+        return "Привет! вот рандомный график"
+    if len(thread["messages"]) == 3:
+        return "Эти графики описывают уровень ожирения в мире"
+    return "Эти еще какие-то графики"
+
+
+
+def add_file_to_rag(file_path: str) -> None:
+    pass
+
+
+def get_retrievals_from_rag(content: str) -> List[Retrieval]:
+    pass

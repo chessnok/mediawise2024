@@ -257,7 +257,7 @@ with tab2:
                 f"Время загрузки: {file['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}")
             with st.expander("Посмотреть файл"):
                 if file['file_type'] == "txt":
-                    st.text(file['content'].decode("utf-8"))
+                    st.text(file['content'])
                 elif file['file_type'] == "pdf":
                     # Ссылка для просмотра PDF файла
                     file_url = f"/files/{file['file_name']}"
