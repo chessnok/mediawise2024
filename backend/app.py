@@ -256,12 +256,8 @@ with tab1:
             add_chat_message(selected_chat_id, "user", prompt)
             with chat_container:
                 st.chat_message("user").write(prompt)
-
-<<<<<<< HEAD
             response, src = chatbot_response(prompt)
-=======
-            response = chatbot_response(selected_chat_id)
->>>>>>> b95bcc4480a27dba4135c61c121dc34257765778
+            #response = chatbot_response(selected_chat_id)
             add_chat_message(selected_chat_id, "assistant", response)
             add_image_message(selected_chat_id, "assistant", src)
             with chat_container:
