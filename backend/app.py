@@ -4,16 +4,20 @@ import time
 from datetime import datetime
 from psycopg2.extras import RealDictCursor
 from config import get_db_connection
-from streamlit_cookies_controller import CookieController
+from streamlit_cookies_manager import CookieManager
 
-# Инициализация состояния приложения
-controller = CookieController()
+# Инициализация менеджера кук
+cookies = CookieManager()
+
+if not cookies.ready():
+    # Ожидаем загрузки кук
+    st.stop()
 
 # Проверяем, есть ли user_id в cookie
-user_id = controller.get('Authorization')
+user_id = cookies.get('Authorization')
 if not user_id:
     user_id = str(uuid.uuid4())
-    controller.set('Authorization', user_id)
+    cookies['Authorization'] = user_id
 
 if 'user_input' not in st.session_state:
     st.session_state.user_input = ""
@@ -24,15 +28,19 @@ if 'chats' not in st.session_state:
 if 'selected_chat' not in st.session_state:
     st.session_state.selected_chat = ""
 
+if 'is_processing' not in st.session_state:
+    st.session_state.is_processing = False
+
 
 # Функция для обработки чата
 def chatbot_response(user_message):
+    time.sleep(10)
     # Простая имитация ответа чата
     return f"Ответ бота на сообщение: {user_message}"
 
 
 def create_chat(chat_name):
-    user_id = str(controller.get('Authorization'))
+    user_id = str(cookies.get('Authorization'))
     chat_id = str(uuid.uuid4())  # Преобразуем UUID в строку
     conn = get_db_connection()
     with conn:
@@ -47,7 +55,7 @@ def create_chat(chat_name):
 
 # Функция для получения списка чатов
 def get_chats():
-    user_id = str(controller.get('Authorization'))
+    user_id = str(cookies.get('Authorization'))
     conn = get_db_connection()
     with conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -197,13 +205,14 @@ with tab1:
             st.chat_message(msg["sender"]).write(msg["message"])
 
     # Позиционирование строки ввода под контейнером сообщений
-    prompt = st.chat_input("Your message...")
+    prompt = st.chat_input("Your message...", disabled=st.session_state.is_processing)
 
     # Обработка ответа от пользователя
     if prompt:
         if not selected_chat_id:
             st.error("Выберите чат!")
         else:
+            st.session_state.is_processing = True
             # Добавление сообщения от пользователя
             add_chat_message(selected_chat_id, "user", prompt)
             with chat_container:
@@ -214,6 +223,8 @@ with tab1:
             add_chat_message(selected_chat_id, "assistant", response)
             with chat_container:
                 st.chat_message("assistant").write(response)
+
+            st.session_state.is_processing = False
 
 # Вкладка библиотеки
 with tab2:
