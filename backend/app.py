@@ -230,13 +230,7 @@ with tab2:
             create_file_group(new_group_name)
             st.success(f"Группа '{new_group_name}' создана!")
 
-    search_query = st.text_input("Поиск группы", "")
-    group_names = get_file_groups()
-    filtered_groups = [group for group in group_names if
-                       search_query.lower() in group.lower()]
-
-    selected_group = st.selectbox("Выберите группу для просмотра:",
-                                  filtered_groups)
+    selected_group = st.selectbox("Выберите группу для просмотра:")
     st.session_state.selected_group = selected_group
 
     if selected_group:
@@ -253,7 +247,8 @@ with tab2:
                 elif file['file_type'] == "pdf":
                     # Ссылка для просмотра PDF файла
                     file_url = f"/files/{file['file_name']}"
-                    st.markdown(f'<embed src="{file_url}" width="100%" height="500px" type="application/pdf">', unsafe_allow_html=True)
+                    st.markdown(f'<embed src="{file_url}" width="100%" height="500px" type="application/pdf" >',
+                                unsafe_allow_html=True)
 
     uploaded_file = st.file_uploader("Загрузить файл (txt или pdf):",
                                      type=["txt", "pdf"])
