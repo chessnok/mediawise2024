@@ -54,7 +54,7 @@ def create_chat(chat_name):
 
 # Функция для получения списка чатов
 def get_chats():
-    user_id = str(controller.get('Authorization'))
+    user_id = str(cookies.get('Authorization'))
     conn = get_db_connection()
     with conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
