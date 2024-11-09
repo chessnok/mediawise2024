@@ -7,13 +7,14 @@ from psycopg2.extras import RealDictCursor
 from config import get_db_connection
 from streamlit_cookies_manager import CookieManager
 
+from gigachat import ask
+
 # Инициализация менеджера кук
 cookies = CookieManager()
 
 if not cookies.ready():
     # Ожидаем загрузки кук
     st.stop()
-
 
 if 'user_input' not in st.session_state:
     st.session_state.user_input = ""
@@ -37,6 +38,17 @@ def chatbot_response(user_message) -> (str, str):
     message = f"Ответ бота на сообщение: {user_message}"
     src = "cat.jpg"
     return message, src
+
+'''
+def chatbot_response(chatid):
+    context = get_chat_history(chatid)
+    context = [{"role": msg["sender"], "content": msg["message"]} for msg in
+               context]
+    # TODO: implement rag
+    context = [{"role": "system", "content": "Ты — ассистент базы знаний компании. Твоя задача, сопровождать выдачу информации по запросу пользователя. Тебе будут предоставлены данные, полученные из базы знаний по результатам запроса пользователя: текстовые данные будут выделены тегами \"<rag>\" и \"</rag>\" — всю информацию внутри тегов считай информацией из базы знаний, входное изображение также воспринимай, как источник из базы знаний. Твой ответ должен следовать следующим принципам: 1) Если запрос пользователя — вопросительный, то нужно ответить на вопрос. 2) Если запрос пользователя — поисковый (в нём нет вопросительной интонации), то нужно кратко описать, что находится на изображении или в тексте из базы знаний. 3) Если ты считаешь, что предоставленные данные из базы знаний не релевантны запросу пользователя — написать, что ты не можешь ответить на данный вопрос по причине отсутствия достоверных данных. Ответ должен содержать только текст, без дополнительной стилизации и комментариев."}] + context
+    resp = ask(context)
+    return resp
+'''
 
 
 def create_chat(chat_name):
@@ -113,7 +125,8 @@ def add_file_to_db(file, group_name):
             group_id = group[0]
 
             # Сохранение файла в директории /files
-            file_path = os.path.join("/files", file.name)  # Путь для сохранения файла
+            file_path = os.path.join("/files",
+                                     file.name)  # Путь для сохранения файла
             with open(file_path, "wb") as f:
                 f.write(file.getvalue())
 
@@ -175,7 +188,8 @@ def get_groups():
     conn = get_db_connection()
     with conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT group_name FROM file_groups ORDER BY timestamp DESC")
+            cur.execute(
+                "SELECT group_name FROM file_groups ORDER BY timestamp DESC")
             groups = [row['group_name'] for row in cur.fetchall()]
     conn.close()
     return groups
@@ -189,12 +203,10 @@ if not user_id:
     create_chat('Первый чат')
     st.session_state.chats = get_chats()[0]['id']
 
-
 # Основной интерфейс приложения
 st.title("Приложение с чатом и библиотекой файлов")
 
 tab1, tab2 = st.tabs(["Чат", "Библиотека"])
-
 
 # Вкладка чата
 with tab1:
@@ -245,13 +257,16 @@ with tab1:
             with chat_container:
                 st.chat_message("user").write(prompt)
 
+<<<<<<< HEAD
             response, src = chatbot_response(prompt)
+=======
+            response = chatbot_response(selected_chat_id)
+>>>>>>> b95bcc4480a27dba4135c61c121dc34257765778
             add_chat_message(selected_chat_id, "assistant", response)
             add_image_message(selected_chat_id, "assistant", src)
             with chat_container:
                 st.chat_message("assistant").write(response)
                 st.chat_message("assistant").image(src)
-
 
 # Вкладка библиотеки
 with tab2:
@@ -265,7 +280,8 @@ with tab2:
             create_file_group(new_group_name)
             st.success(f"Группа '{new_group_name}' создана!")
 
-    selected_group = st.selectbox("Выберите группу для просмотра:", get_groups())
+    selected_group = st.selectbox("Выберите группу для просмотра:",
+                                  get_groups())
     st.session_state.selected_group = selected_group
 
     files_container = st.empty()
@@ -280,12 +296,14 @@ with tab2:
                     with st.expander(file['file_name']):
                         st.write(f"Имя файла: {file['file_name']}")
                         st.write(f"Тип файла: {file['file_type']}")
-                        st.write(f"Время загрузки: {file['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}")
+                        st.write(
+                            f"Время загрузки: {file['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}")
 
                         if file['file_type'] == "txt":
                             try:
                                 # Преобразуем memoryview в bytes, а затем декодируем в строку
-                                content = file['content'].tobytes().decode("utf-8")
+                                content = file['content'].tobytes().decode(
+                                    "utf-8")
                                 # Ограничиваем высоту контейнера с прокруткой
                                 st.markdown(
                                     f"""
@@ -296,7 +314,8 @@ with tab2:
                                     unsafe_allow_html=True
                                 )
                             except UnicodeDecodeError:
-                                st.error("Не удалось декодировать содержимое файла.")
+                                st.error(
+                                    "Не удалось декодировать содержимое файла.")
 
                         elif file['file_type'] == "pdf":
                             # Ссылка для просмотра PDF файла
@@ -318,14 +337,17 @@ with tab2:
     # Загрузка файла
     if uploaded_file:
         if st.button("Загрузить файл") and selected_group:
-            if uploaded_file.name in map(lambda x: x['file_name'], get_files_by_group(selected_group)):
-                st.error(f"Файл '{uploaded_file.name}' уже загружен в группу '{selected_group}'")
+            if uploaded_file.name in map(lambda x: x['file_name'],
+                                         get_files_by_group(selected_group)):
+                st.error(
+                    f"Файл '{uploaded_file.name}' уже загружен в группу '{selected_group}'")
             else:
                 start_time = time.time()
                 add_file_to_db(uploaded_file, selected_group)
-                st.success(f"Файл '{uploaded_file.name}' загружен в группу '{selected_group}'")
-                st.write(f"Время загрузки: {time.time() - start_time:.2f} секунд")
+                st.success(
+                    f"Файл '{uploaded_file.name}' загружен в группу '{selected_group}'")
+                st.write(
+                    f"Время загрузки: {time.time() - start_time:.2f} секунд")
 
                 files_container.empty()
                 display_files()
-

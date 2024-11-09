@@ -2,4 +2,5 @@ python-decouple==3.8
 streamlit==1.40.0
 psycopg2-binary==2.9.10
 streamlit-cookies-manager==0.2.0
-
+langchain_experimental==0.3.3
+cffi==1.17.1
