@@ -14,11 +14,6 @@ if not cookies.ready():
     # Ожидаем загрузки кук
     st.stop()
 
-# Проверка и создание user_id
-user_id = cookies.get('Authorization')
-if not user_id:
-    user_id = str(uuid.uuid4())
-    cookies['Authorization'] = user_id
 
 if 'user_input' not in st.session_state:
     st.session_state.user_input = ""
@@ -171,6 +166,15 @@ def get_groups():
             groups = [row['group_name'] for row in cur.fetchall()]
     conn.close()
     return groups
+
+
+# Проверка и создание user_id
+user_id = cookies.get('Authorization')
+if not user_id:
+    user_id = str(uuid.uuid4())
+    cookies['Authorization'] = user_id
+    create_chat('Первый чат')
+    st.session_state.chats = get_chats()[0]['id']
 
 
 # Основной интерфейс приложения
