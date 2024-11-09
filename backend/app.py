@@ -167,7 +167,7 @@ def get_groups():
     conn = get_db_connection()
     with conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT group_name FROM file_groups")
+            cur.execute("SELECT group_name FROM file_groups ORDER BY timestamp")
             groups = [row['group_name'] for row in cur.fetchall()]
     conn.close()
     return groups
