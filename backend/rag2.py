@@ -6,7 +6,7 @@ from langchain_community.embeddings.gigachat import GigaChatEmbeddings
 embeddings = GigaChatEmbeddings(credentials="MTEwMzY1YmEtMzYzMy00YWQ1LThmMTQtNWEzODM0NzUwN2IwOjU2ZDlkOGY1LWU0MDUtNDQ2Ni1hNTQyLWU5N2M4MzJmY2FmOA==", verify_ssl_certs=False)
 
 # Создаем клиент ChromaDB с постоянным хранилищем данных в указанной директории
-client = chromadb.PersistentClient(path=".")
+client = chromadb.PersistentClient(path="/chromadb.sqlite3")
 
 
 def giga_embend(text):
