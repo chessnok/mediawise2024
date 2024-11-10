@@ -5,6 +5,11 @@ import time
 from db import get_chats, add_chat_message, add_image_message, get_chat_history, get_files_by_group, create_file_group, \
     get_groups, add_file_to_db, create_chat
 from streamlit_cookies_manager import CookieManager
+
+from gigachat import ask
+from model import ResponseProcessor
+from rag2 import get_embedding
+
 # Инициализация менеджера кук
 
 cookies = CookieManager()
@@ -30,21 +35,31 @@ if not os.path.exists("/files"):
 
 
 # Функции для чата и работы с файлами
-def chatbot_response(user_message) -> (str, str, int):
-    message = f"Ответ бота на сообщение: {user_message}"
-    src = "test.pdf"
-    page_num = 3
-    return message, src, page_num
-
-
-# def chatbot_response(chatid):
-#     context = get_chat_history(chatid)
-#     context = [{"role": msg["sender"], "content": msg["message"]} for msg in
-#                context]
-#     # TODO: implement rag
-#     context = [{"role": "system", "content": "Ты — ассистент базы знаний компании. Твоя задача, сопровождать выдачу информации по запросу пользователя. Тебе будут предоставлены данные, полученные из базы знаний по результатам запроса пользователя: текстовые данные будут выделены тегами \"<rag>\" и \"</rag>\" — всю информацию внутри тегов считай информацией из базы знаний, входное изображение также воспринимай, как источник из базы знаний. Твой ответ должен следовать следующим принципам: 1) Если запрос пользователя — вопросительный, то нужно ответить на вопрос. 2) Если запрос пользователя — поисковый (в нём нет вопросительной интонации), то нужно кратко описать, что находится на изображении или в тексте из базы знаний. 3) Если ты считаешь, что предоставленные данные из базы знаний не релевантны запросу пользователя — написать, что ты не можешь ответить на данный вопрос по причине отсутствия достоверных данных. Ответ должен содержать только текст, без дополнительной стилизации и комментариев."}] + context
-#     resp = ask(context)
-#     return resp
+def chatbot_response(user_message, chat_id) -> (str, str, int):
+    embedding = get_embedding("main", user_message)
+    processor = ResponseProcessor(embedding)
+    sorted_items = processor.get_sorted_items_by_distance()
+    best_item = sorted_items[0]
+    src = best_item.metadata.get("file_name")
+    page_num = best_item.metadata.get("page")
+    chat_history = get_chat_history(chat_id)
+    context = [{"role": msg["sender"], "content": msg["message"]} for msg in chat_history]
+    context = [{"role":
+                    "system",
+                "content":
+                    "Ты — ассистент базы знаний компании. Твоя задача, сопровождать выдачу информации по запросу "
+                    "пользователя. Тебе будут предоставлены данные, полученные из базы знаний по результатам запроса "
+                    "пользователя: текстовые данные будут выделены тегами \"<rag>\" и \"</rag>\" — всю информацию "
+                    "внутри тегов считай информацией из базы знаний, входное изображение также воспринимай, "
+                    "как источник из базы знаний. Твой ответ должен следовать следующим принципам: 1) Если запрос "
+                    "пользователя — вопросительный, то нужно ответить на вопрос. 2) Если запрос пользователя — "
+                    "поисковый (в нём нет вопросительной интонации), то нужно кратко описать, что находится на "
+                    "изображении или в тексте из базы знаний. 3) Если ты считаешь, что предоставленные данные из базы "
+                    "знаний не релевантны запросу пользователя — написать, что ты не можешь ответить на данный вопрос "
+                    "по причине отсутствия достоверных данных. Ответ должен содержать только текст, "
+                    "без дополнительной стилизации и комментариев."}] + context
+    resp = ask(context)
+    return resp, src, page_num
 
 
 # Проверка и создание user_id
@@ -117,7 +132,7 @@ with tab1:
             with chat_container:
                 st.chat_message("user").write(prompt)
             response, src, page_num = chatbot_response(prompt)
-            #response = chatbot_response(selected_chat_id)
+            # response = chatbot_response(selected_chat_id)
             add_chat_message(selected_chat_id, "assistant", response)
             add_image_message(selected_chat_id, "assistant", src, page_num)
             with chat_container:
@@ -180,8 +195,8 @@ with tab2:
                             # Ссылка для просмотра PDF файла
                             file_url = f"/files/{file['file_name']}"
                             st.markdown(
-                                 f'<embed src="{file_url}" width="100%" height="500px" type="application/pdf">',
-                                 unsafe_allow_html=True
+                                f'<embed src="{file_url}" width="100%" height="500px" type="application/pdf">',
+                                unsafe_allow_html=True
                             )
             else:
                 st.write("В этой группе пока нет файлов!")
