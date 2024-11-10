@@ -1,4 +1,5 @@
-from typing import TypedDict, List, Optional, Any
+from typing import TypedDict, List, Optional
+from typing import List, Optional, Dict, Any
 
 
 class Retrieval(TypedDict):
