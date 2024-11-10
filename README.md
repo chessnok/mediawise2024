@@ -1,42 +1,29 @@
 # EasyDocs by DeepTech<img src="https://github.com/blackcater/blackcater/raw/main/images/Hi.gif" height="50"/></h1>
-We present EasyDocs service, which will help users to facilitate their work with documentation and technical information by asking our AI model for an answer. 
-Any user will be able to contact the model via a Telegram bot or on our website and ask a question. 
-Our service provides a number of features that make it a unique solution to this problem:
-1. Working with context. The model remembers the context of communication with the user and also processes it when issuing an answer. At any time the user can create a new context. 
-2. Dealing with incorrect questions. Our model is able to recognize questions that are not related to documentation. Also, if a question was asked about the service, the answer to which is not in the documentation, the chatbot will offer to contact the administrator who will be able to advise the user. 
-3. scalability. Our service has a microservice architecture, so the model can be easily used in other tasks. We have developed an authentication system through Apikey that will allow us to give access to the model to third party users. For this purpose, we also developed full Swagger documentation for working with the model. 
-
-
-The stack of our solution: 
-Flask, Telebot, ML libraries
+Мы представляем сервис EasyDocs, который поможет пользователям облегчить работу с большим объёмом pdf фалйлов. 
+Любой пользователь сможет обратиться к модели через вебсайт и задать интересующий его вопрос.  
+Наш сервис предоставляет ряд фичей, которые делают его уникальным решением этой проблемы:  
+1. Работа с контекстом. Модель запоминает контекст общения с пользователем и также обрабатывает его при выдаче ответа. В любой момент пользователь может создать новый контекст.  
+2. Работа с некорректными вопросам. Наша модель способна распознавать вопросы, не относящиеся 
+3. Широкие администраторские возможности настройки используемых моделью файлов, создания групп файлов
 
 ### Installation
 
 1. Run `docker-compose up -d`
-2. Run `docker-compose exec tg_bot python init.py`
-3. Run `docker-compose exec backend python init.py`
-4. Open [Website](localhost)
-5. Enjoy!
+2. Open [Website](localhost)
+3. Enjoy!
 
 
 ## Technologies
 
-#### Backend
+#### Backend & Frontend
 
-- Flask
+- Streamlit
 - TelegramBotApi
 - Docker
 - Docker-compose
 - PostgreSQL
-- Swagger
-
-#### Frontend
-
-- JavaScript
-- HTML
-- CSS
 
 ![Структура проекта](/assets/img2.png "Структура проекта")
 Структура проекта
-![Пользовательские сценарии при обращении к боту](/assets/image1.jpg "Пользовательские сценарии")
+![Пользовательские сценарии при обращении к вебсайту](/assets/image1.jpg "Пользовательские сценарии")
 Пользовательские сценарии telegram бота
