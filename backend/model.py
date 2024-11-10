@@ -75,7 +75,7 @@ class ResponseProcessor:
         ids = response.get('ids', [[]])[0]
         embeddings = response.get('embeddings')
         documents = response.get('documents', [[]])[0]
-        uris = response.get('uris', [None])[0]
+        uris = response.get('urls', [None])[0]
         data = response.get('data')
         metadatas = response.get('metadatas', [[]])[0]
         distances = response.get('distances', [[]])[0]
