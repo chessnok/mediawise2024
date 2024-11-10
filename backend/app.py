@@ -131,7 +131,7 @@ with tab1:
             add_chat_message(selected_chat_id, "user", prompt)
             with chat_container:
                 st.chat_message("user").write(prompt)
-            response, src, page_num = chatbot_response(prompt)
+            response, src, page_num = chatbot_response(prompt, selected_chat_id)
             # response = chatbot_response(selected_chat_id)
             add_chat_message(selected_chat_id, "assistant", response)
             add_image_message(selected_chat_id, "assistant", src, page_num)
